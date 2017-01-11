@@ -34,7 +34,7 @@ module Druid
       @properties[:queryType] = type
       self
     end
-    
+
     def get_query_type()
       @properties[:queryType] || :groupBy
     end
@@ -63,10 +63,21 @@ module Druid
       @properties[:threshold] = threshold
       self
     end
-    
-    def time_series(*aggregations)
+
+    def time_series(aggregations)
       query_type(:timeseries)
-      #@properties[:aggregations] = aggregations.flatten
+      @properties[:aggregations] = [] if @properties[:aggregations].nil?
+
+      aggregations.each do |agg_type, metrics|
+        metrics.each do |metric|
+          @properties[:aggregations] << {
+            :type => agg_type,
+            :name => metric.to_s,
+            :fieldName => metric.to_s
+          } unless contains_aggregation?(metric)
+        end
+      end
+
       self
     end
 
@@ -192,7 +203,7 @@ module Druid
         :columns => order_by_column_spec(columns)
       }
       self
-    end 
+    end
 
     private
 
